@@ -1,0 +1,36 @@
+version: 0.2
+ 
+env:
+  variables:
+    PROJECT_NAME: "CodeBuildAssetManagement"
+
+  parameter-store:
+    BLACKDUCK_URL: /CodeBuild/BLACKDUCK_URL
+    BLACKDUCK_TOKEN: /CodeBuild/BLACKDUCK_TOKEN
+    BLACKDUCK_NAME: /CodeBuild/BLACKDUCK_NAME
+    BLACKDUCK_PASSWORD: /CodeBuild/BLACKDUCK_PASSWORD
+ 
+phases:
+  install:
+    runtime-versions:
+      java: corretto11
+    commands:
+      - pwd
+      - ls -lrt
+      - chmod -R 777 $CODEBUILD_SRC_DIR
+      - curl -LOk https://detect.synopsys.com/detect.sh
+      - chmod +x ./detect.sh
+  build:
+    commands:
+      - echo "List Present Working Directory Content"
+      - pwd
+      - ls -lrt
+  post_build:
+    commands:
+       - echo "Black Duck Scanning Job in-progess.."      
+       - pwd
+       - ls -lrt
+       - bash detect.sh --blackduck.url=$BLACKDUCK_URL --blackduck.api.token=$BLACKDUCK_TOKEN --blackduck.trust.cert=true --detect.project.name=$PROJECT_NAME --detect.project.version.name="QA"
+       - echo "Black Duck Scanning Completed Successfully!"
+artifacts:
+  discard-paths: yes

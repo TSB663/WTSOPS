@@ -1,0 +1,38 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 16
+      # java: corretto11
+    commands:
+      - echo install phase
+  pre_build:
+    commands:
+      - pwd
+      - ls -lrta
+      - npm install --location=global @angular/cli@latest
+      - npm install --legacy-peer-deps
+  build:
+    commands:
+      - echo Build Started
+      - pwd
+      - ls -lrta
+      - npm run build_prod
+      - ls -ltra dist
+      - cd dist/assetmgt
+      - ls -lrta
+      - aws s3 sync . s3://swts-asset-mgt/
+      - echo Files were uploaded unto s3 bucket
+  post_build:
+    commands:
+      - echo "post build started `date`"
+      - pwd
+      - ls -lrta
+      - aws cloudfront create-invalidation --distribution-id E3PEDSVQ942G2W --paths "/*"
+      - echo "Code has been deployed unto CloudFront `date`"
+artifacts:
+  files:
+    - '**/*'
+  discard-paths: yes
+
